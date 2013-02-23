@@ -4,10 +4,9 @@
  */
 package darkengines.conference.web;
 
-import darkengines.session.SessionModule;
+import darkengines.user.User;
 import darkengines.user.UserModule;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -22,7 +21,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Quicksort
  */
-public class Install extends HttpServlet {
+public class Join extends HttpServlet {
 
     /**
      * Processes requests for both HTTP
@@ -35,14 +34,20 @@ public class Install extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-	    throws ServletException, IOException, UnsupportedEncodingException, ClassNotFoundException, SQLException, NamingException {
-	response.setContentType("text/html;charset=UTF-8");
-	PrintWriter out = response.getWriter();
-	try {
-	    UserModule.getUserRepository().install();
-	    SessionModule.getSessionRepository().install();
-	} finally {	    
-	    out.close();
+	    throws ServletException, IOException, UnsupportedEncodingException, ClassNotFoundException, NamingException, SQLException, Exception {
+	String email = request.getParameter("email");
+	String password = request.getParameter("password");
+	String displayName = request.getParameter("display_name");
+	User user = UserModule.getUserRepository().getUserByEmail(email);
+	
+	if (user != null) {
+	    throw new Exception(String.format("Email %s already used.", email));
+	} else {
+	    user = new User();
+	    user.setEmail(email);
+	    user.setPassword(password);
+	    user.setDisplayName(displayName);
+	    UserModule.getUserRepository().insertUser(user);
 	}
     }
 
@@ -61,12 +66,8 @@ public class Install extends HttpServlet {
 	    throws ServletException, IOException, UnsupportedEncodingException {
 	try {
 	    processRequest(request, response);
-	} catch (ClassNotFoundException ex) {
-	    Logger.getLogger(Install.class.getName()).log(Level.SEVERE, null, ex);
-	} catch (SQLException ex) {
-	    Logger.getLogger(Install.class.getName()).log(Level.SEVERE, null, ex);
-	} catch (NamingException ex) {
-	    Logger.getLogger(Install.class.getName()).log(Level.SEVERE, null, ex);
+	} catch (Exception e) {
+	    response.getWriter().write(e.getMessage());
 	}
     }
 
@@ -84,12 +85,8 @@ public class Install extends HttpServlet {
 	    throws ServletException, IOException, UnsupportedEncodingException {
 	try {
 	    processRequest(request, response);
-	} catch (ClassNotFoundException ex) {
-	    Logger.getLogger(Install.class.getName()).log(Level.SEVERE, null, ex);
-	} catch (SQLException ex) {
-	    Logger.getLogger(Install.class.getName()).log(Level.SEVERE, null, ex);
-	} catch (NamingException ex) {
-	    Logger.getLogger(Install.class.getName()).log(Level.SEVERE, null, ex);
+	} catch (Exception e) {
+	    response.getWriter().write(e.getMessage());
 	}
     }
 

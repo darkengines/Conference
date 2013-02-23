@@ -1,22 +1,57 @@
 (function() {
     $(document).ready(function() {
-	initialize();
-	$('div.Setup').each(function() {
-	   var $container = $(this);
-	   $('a.Setup', $container).each(function() {
-	       var $a = $(this);
-	       $a.click(function() {
-		  $.ajax({
-		      url: $a.attribute('href'),
-		      success: function() {
-			  $('p.Result', $container).text('OK !');
-		      }
-		  });
-		  alert('caca');
-		  return false;
-	       });
-	   }) 
-	});
+		initialize();
+		$('div.Setup').each(function() {
+		   var $container = $(this);
+		   $('a.Setup', $container).each(function() {
+			   var $a = $(this);
+			   $a.click(function() {
+			  $.ajax({
+				  url: $a.attr('href'),
+				  success: function(content) {
+				  $('p.Result', $container).text(content);
+				  }
+			  });
+			  return false;
+			   });
+		   }) 
+		});
+		$('div.Join').each(function() {
+		   var $container = $(this);
+		   $('form.Join', $container).each(function() {
+			   var $form = $(this);
+			   $('input[type=submit]', $form).click(function() {
+				  $.ajax({
+					  url: $form.attr('action'),
+					  data: $form.serialize(),
+					  success: function(content) {
+					  $('p.Result', $container).text(content);
+					  }
+				  });
+				  return false;
+			   });
+		   }) 
+		});
+		$('div.Login').each(function() {
+		   var $container = $(this);
+		   $('form.Login', $container).each(function() {
+			   var $form = $(this);
+			   $('input[type=submit]', $form).click(function() {
+				  $.ajax({
+					  url: $form.attr('action'),
+					  data: $form.serialize(),
+					  success: function(content) {
+						if (content.error) {
+							$('p.Result', $container).text(content.message);
+						} else {
+							$.cookie('token', content.uuid);
+						}
+					  },
+				  });
+				  return false;
+			   });
+		   }) 
+		});
     });
 })(jQuery);
 
@@ -84,4 +119,27 @@ function onGotLocalDescription(localDescription) {
 	pc2.setRemoteDescription(localDescription);
 	pc1.setLocalDescription(localDescription);
 	pc2.createAnswer(onGotRemoteDescription);
+}
+
+function setCookie(c_name,value,exdays)
+{
+	var exdate=new Date();
+	exdate.setDate(exdate.getDate() + exdays);
+	var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
+	document.cookie=c_name + "=" + c_value;
+}
+
+function getCookie(c_name)
+{
+var i,x,y,ARRcookies=document.cookie.split(";");
+for (i=0;i<ARRcookies.length;i++)
+{
+  x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
+  y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
+  x=x.replace(/^\s+|\s+$/g,"");
+  if (x==c_name)
+    {
+    return unescape(y);
+    }
+  }
 }

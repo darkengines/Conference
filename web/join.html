@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <title>Setup</title>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="conference.js"></script>
+	<script type="text/javascript" src="jquery_cookie.js"></script>
+    <link rel="stylesheet" href="conference.css" type="text/css" />
+  </head>
+<body>
+    <div class="Content">
+		<div class="Join">
+			<form action="join" method="post" class="Join">
+				<label for="email">Email:</label>
+				<input id="email" type="text" name="email">
+				<label for="password">Password:</label>
+				<input id="password" type="text" name="password">
+				<label for="display_name">Display name:</label>
+				<input id="display_name" type="text" name="display_name">
+				<input type="submit" value="Join" class="Join"/>
+			</form>
+			<p class="Result">
+			</p>
+		</div>
+	</div>
+</body>
+</html>

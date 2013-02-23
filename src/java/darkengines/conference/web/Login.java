@@ -4,12 +4,16 @@
  */
 package darkengines.conference.web;
 
+import com.google.gson.Gson;
+import darkengines.core.json.JSONBuilder;
+import darkengines.session.Session;
 import darkengines.session.SessionModule;
+import darkengines.user.User;
 import darkengines.user.UserModule;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
@@ -22,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Quicksort
  */
-public class Install extends HttpServlet {
+public class Login extends HttpServlet {
 
     /**
      * Processes requests for both HTTP
@@ -35,14 +39,26 @@ public class Install extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-	    throws ServletException, IOException, UnsupportedEncodingException, ClassNotFoundException, SQLException, NamingException {
-	response.setContentType("text/html;charset=UTF-8");
-	PrintWriter out = response.getWriter();
+	    throws ServletException, IOException, UnsupportedEncodingException, ClassNotFoundException, NamingException, SQLException, Exception {
+	response.setContentType("application/json");
+	Gson gson = new Gson();
 	try {
-	    UserModule.getUserRepository().install();
-	    SessionModule.getSessionRepository().install();
-	} finally {	    
-	    out.close();
+	    String email =  request.getParameter("email");
+	    String password = request.getParameter("password");
+
+	    User user = UserModule.getUserRepository().getUserByCredentials(email, password);
+
+	    if (user == null) {
+		throw new Exception("Bad credentials");
+	    }
+
+	    Session session = new Session();
+	    session.setUserId(user.getId());
+	    session.setUuid(UUID.randomUUID());
+	    session = SessionModule.getSessionRepository().insertSession(session);
+	    response.getWriter().write(gson.toJson(session));
+	} catch (Exception e) {
+	    response.getWriter().write(JSONBuilder.buildError(e));
 	}
     }
 
@@ -62,11 +78,13 @@ public class Install extends HttpServlet {
 	try {
 	    processRequest(request, response);
 	} catch (ClassNotFoundException ex) {
-	    Logger.getLogger(Install.class.getName()).log(Level.SEVERE, null, ex);
-	} catch (SQLException ex) {
-	    Logger.getLogger(Install.class.getName()).log(Level.SEVERE, null, ex);
+	    Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
 	} catch (NamingException ex) {
-	    Logger.getLogger(Install.class.getName()).log(Level.SEVERE, null, ex);
+	    Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+	} catch (SQLException ex) {
+	    Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+	} catch (Exception ex) {
+	    Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
 	}
     }
 
@@ -85,12 +103,15 @@ public class Install extends HttpServlet {
 	try {
 	    processRequest(request, response);
 	} catch (ClassNotFoundException ex) {
-	    Logger.getLogger(Install.class.getName()).log(Level.SEVERE, null, ex);
-	} catch (SQLException ex) {
-	    Logger.getLogger(Install.class.getName()).log(Level.SEVERE, null, ex);
+	    Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
 	} catch (NamingException ex) {
-	    Logger.getLogger(Install.class.getName()).log(Level.SEVERE, null, ex);
+	    Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+	} catch (SQLException ex) {
+	    Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+	} catch (Exception ex) {
+	    Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
 	}
+
     }
 
     /**

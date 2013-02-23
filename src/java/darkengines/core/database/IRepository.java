@@ -19,5 +19,5 @@ public interface IRepository<T> {
     void reinstall() throws UnsupportedEncodingException, IOException, SQLException, ClassNotFoundException, NamingException;
     void uninstall() throws UnsupportedEncodingException, IOException, SQLException, ClassNotFoundException, NamingException;
     void clear() throws UnsupportedEncodingException, IOException, SQLException, ClassNotFoundException, NamingException;
-    T map(ResultSet resultSet);
+    T map(ResultSet resultSet) throws SQLException;
 }

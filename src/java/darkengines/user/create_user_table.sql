@@ -1,4 +1,4 @@
-CREATE  TABLE `conference`.`user` (
+CREATE TABLE IF NOT EXISTS `conference`.`user` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `email` VARCHAR(128) NOT NULL ,
   `password` VARCHAR(64) NOT NULL ,

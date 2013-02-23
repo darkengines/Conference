@@ -1,0 +1,1 @@
+INSERT INTO `user` (`email`, `password`, `display_name`) VALUES (?, SHA1(?), ?);
