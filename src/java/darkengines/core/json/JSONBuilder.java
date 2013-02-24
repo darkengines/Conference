@@ -5,13 +5,20 @@
 package darkengines.core.json;
 
 import com.google.gson.Gson;
+import darkengines.core.service.exception.PublicError;
+import darkengines.core.service.exception.PublicException;
 
 /**
  *
  * @author Quicksort
  */
 public class JSONBuilder {
+    public static String buildError(PublicException e) {
+	Gson gson = new Gson();
+	return gson.toJson(new PublicError(e));
+    }
     public static String buildError(Exception e) {
-	return String.format("{\"message\":\"%s\"}", e.getMessage());
+	Gson gson =new Gson();
+	return gson.toJson(new PublicError(e));
     }
 }

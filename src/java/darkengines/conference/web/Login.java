@@ -6,8 +6,12 @@ package darkengines.conference.web;
 
 import com.google.gson.Gson;
 import darkengines.core.json.JSONBuilder;
+import darkengines.core.json.JSONResponse;
+import darkengines.core.service.exception.PublicError;
+import darkengines.core.service.exception.PublicException;
 import darkengines.session.Session;
 import darkengines.session.SessionModule;
+import darkengines.user.BadCredentialsException;
 import darkengines.user.User;
 import darkengines.user.UserModule;
 import java.io.IOException;
@@ -49,16 +53,18 @@ public class Login extends HttpServlet {
 	    User user = UserModule.getUserRepository().getUserByCredentials(email, password);
 
 	    if (user == null) {
-		throw new Exception("Bad credentials");
+		throw new BadCredentialsException(email);
 	    }
 
 	    Session session = new Session();
 	    session.setUserId(user.getId());
 	    session.setUuid(UUID.randomUUID());
 	    session = SessionModule.getSessionRepository().insertSession(session);
-	    response.getWriter().write(gson.toJson(session));
+	    response.getWriter().write(new JSONResponse(0, session).toString());
+	} catch (PublicException pe) {
+	    response.getWriter().write(new JSONResponse(1, new PublicError(pe)).toString());
 	} catch (Exception e) {
-	    response.getWriter().write(JSONBuilder.buildError(e));
+	    response.getWriter().write(new JSONResponse(1, new PublicError(e)).toString());
 	}
     }
 

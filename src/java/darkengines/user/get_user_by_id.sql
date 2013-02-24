@@ -1,0 +1,1 @@
+SELECT `id`, `email`, `password`, `display_name` FROM `user` WHERE `id` = ?;

@@ -82,6 +82,22 @@ public class UserRepository extends Repository<User> {
 	return user;
     }
     
+     public User getUserById(Long id) throws UnsupportedEncodingException, IOException, ClassNotFoundException, NamingException, SQLException {
+	User user = null;
+	String query = getQuery("get_user_by_id.sql", true);
+	Connection connection = Database.getConnection();
+	PreparedStatement ps = connection.prepareStatement(query);
+	ps.setObject(1, id);
+	ResultSet resultSet = ps.executeQuery();
+	if (resultSet.next()) {
+	    user = map(resultSet);
+	}
+	resultSet.close();
+	ps.close();
+	connection.close();
+	return user;
+    }
+    
     public User getUserByCredentials(String email, String password) throws UnsupportedEncodingException, IOException, ClassNotFoundException, NamingException, SQLException {
 	User user = null;
 	String query = getQuery("get_user_by_credentials.sql", true);

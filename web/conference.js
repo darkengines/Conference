@@ -41,12 +41,13 @@
 					  url: $form.attr('action'),
 					  data: $form.serialize(),
 					  success: function(content) {
-						if (content.error) {
-							$('p.Result', $container).text(content.message);
+						if (content.code) {
+							$('p.Result', $container).text(content.content.message);
 						} else {
-							$.cookie('token', content.uuid);
+							$('p.Result', $container).text(content.content.uuid);
+							$.cookie('uuid', content.content.uuid);
 						}
-					  },
+					  }
 				  });
 				  return false;
 			   });

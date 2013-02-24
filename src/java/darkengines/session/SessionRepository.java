@@ -71,7 +71,7 @@ public class SessionRepository extends Repository<Session> {
 	Connection connection = Database.getConnection();
 	PreparedStatement ps = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
 	ps.setObject(1, session.getUserId());
-	ps.setObject(2, session.getUuid());
+	ps.setObject(2, session.getUuid().toString());
 	ps.executeUpdate();
 	ResultSet generatedKeys = ps.getGeneratedKeys();
 	if (generatedKeys.next()) {
@@ -87,9 +87,25 @@ public class SessionRepository extends Repository<Session> {
 	String query = getQuery("delete_session_by_uuid.sql", true);
 	Connection connection = Database.getConnection();
 	PreparedStatement ps = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-	ps.setObject(1, uuid);
+	ps.setObject(1, uuid.toString());
 	ps.executeUpdate();
 	ps.close();
 	connection.close();
+    }
+    
+    public Session getSessionByUuid(UUID uuid) throws UnsupportedEncodingException, IOException, ClassNotFoundException, NamingException, SQLException {
+	Session session = null;
+	String query = getQuery("get_session_by_uuid.sql", true);
+	Connection connection = Database.getConnection();
+	PreparedStatement ps = connection.prepareStatement(query);
+	ps.setObject(1, uuid.toString());
+	ResultSet resultSet = ps.executeQuery();
+	if (resultSet.next()) {
+	    session = map(resultSet);
+	}
+	resultSet.close();
+	ps.close();
+	connection.close();
+	return session;
     }
 }

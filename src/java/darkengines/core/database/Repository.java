@@ -16,7 +16,7 @@ import java.util.Hashtable;
  * @author Quicksort
  */
 public abstract class Repository<T> implements IRepository<T> {
-
+    
     protected static final Hashtable<String, String> queriesRegistry = new Hashtable<String, String>();
 
     private static final String getQuery(String path, boolean useCache, Class type) throws UnsupportedEncodingException, IOException {

@@ -1,0 +1,1 @@
+SELECT `id`, `user_id`, `uuid` FROM `session` WHERE `uuid` = ?;

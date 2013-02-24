@@ -12,6 +12,14 @@
         <servlet-name>login</servlet-name>
         <servlet-class>darkengines.conference.web.Login</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>chat</servlet-name>
+        <servlet-class>darkengines.conference.web.Chat</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>chat</servlet-name>
+        <url-pattern>/chat</url-pattern>
+    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>install</servlet-name>
         <url-pattern>/install</url-pattern>
