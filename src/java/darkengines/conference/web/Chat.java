@@ -4,6 +4,8 @@
  */
 package darkengines.conference.web;
 
+import darkengines.conference.Application;
+import darkengines.core.event.IListener;
 import darkengines.session.Session;
 import darkengines.session.SessionModule;
 import darkengines.user.User;
@@ -25,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.catalina.comet.CometEvent;
 import org.apache.catalina.comet.CometEvent.EventType;
 import org.apache.catalina.comet.CometProcessor;
+import darkengines.chat.NewChatMessageEventArgs;
 
 /**
  *
@@ -63,9 +66,23 @@ public class Chat implements CometProcessor  {
 	    
 	    switch (eventType) {
 		case BEGIN: {
-		    connections.add(response);
+		    synchronized(connections) {
+			connections.add(response);
+		    }
+		    break;
 		}
-		    
+		case END: {
+		    synchronized(connections) {
+			connections.remove(response);
+		    }
+		    break;
+		}
+		case ERROR: {
+		    synchronized(connections) {
+			connections.remove(response);
+		    }
+		    break;
+		}		    
 	    }
 	} catch (ClassNotFoundException ex) {
 	    Logger.getLogger(Chat.class.getName()).log(Level.SEVERE, null, ex);
@@ -79,9 +96,7 @@ public class Chat implements CometProcessor  {
     @Override
     public void init(ServletConfig config) throws ServletException {
 	connections = new ArrayList<HttpServletResponse>();
-	Thread thread = new Thread(new ChatThread(), "test");
-	thread.setDaemon(true);
-	thread.start();
+	Application.getChat().newMessage.addListener(new NewChatMessageListener());
     }
 
     @Override
@@ -112,15 +127,14 @@ public class Chat implements CometProcessor  {
 	ce.close();
     }
     
-    public class ChatThread implements Runnable {
-	
-	protected boolean running = true;
+    public class NewChatMessageListener implements IListener<NewChatMessageEventArgs> {
+
 	@Override
-	public void run() {
-	    while (running) {
-		for (HttpServletResponse connection: connections) {
+	public void callback(Object sender, NewChatMessageEventArgs eventArgs) {
+	    synchronized(connections) {
+		for(HttpServletResponse response: connections) {
 		    try {
-			connection.getWriter().write("<p>caca<p>");
+			response.getOutputStream().print(String.format("<p>%s: %s</p>", eventArgs.getUser().getDisplayName(), eventArgs.getMessage()));
 		    } catch (IOException ex) {
 			Logger.getLogger(Chat.class.getName()).log(Level.SEVERE, null, ex);
 		    }

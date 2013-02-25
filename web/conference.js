@@ -1,3 +1,61 @@
+setRTCPeerConnection();
+setGetUserMedia();
+
+function setRTCPeerConnection() {
+	var RTCPeerConnection = null;
+	var rtccheck = new Array();
+	rtccheck.push(typeof webkitRTCPeerConnection == "undefined");
+	rtccheck.push(typeof mozRTCPeerConnection == "undefined");
+
+	var i = 0;
+	var found = 0;
+	while (!found && i<rtccheck.length) {
+		found = !rtccheck[i];
+		i++;
+	}
+
+	switch (i) {
+		case (1): {
+			RTCPeerConnection = webkitRTCPeerConnection;
+			break;
+		}
+		case (2): {
+			RTCPeerConnection = mozRTCPeerConnection;
+			break;
+		}
+	}
+	window.RTCPeerConnection = RTCPeerConnection;
+}
+
+function userMediaError(error) {
+
+}
+function setGetUserMedia() {
+	var getUserMedia = null;
+	var gumcheck = new Array();
+	gumcheck.push(typeof navigator.webkitGetUserMedia == "undefined");
+	gumcheck.push(typeof navigator.mozGetUserMedia == "undefined");
+
+	var i = 0;
+	var found = 0;
+	while (!found && i<gumcheck.length) {
+		found = !gumcheck[i];
+		i++;
+	}
+
+	switch (i) {
+		case (1): {
+			getUserMedia = navigator.webkitGetUserMedia;
+			break;
+		}
+		case (2): {
+			getUserMedia = navigator.mozGetUserMedia;
+			break;
+		}
+	}
+	navigator.getUserMedia = getUserMedia;
+}
+
 (function() {
     $(document).ready(function() {
 		initialize();
@@ -53,6 +111,19 @@
 			   });
 		   }) 
 		});
+		$('div.Chat').each(function() {
+		   var $container = $(this);
+		   $('a.Chat', $container).each(function() {
+			   var $a = $(this);
+			   $a.click(function() {
+				var socket = new WebSocket('ws://127.0.0.1:8080/conference/websocket');
+				socket.onmessage = function(e) {
+					$('p.Result', $container).append($('<p>'+e.data+'</p>'));
+				}
+				return false;
+			   });
+		   }) 
+		});
     });
 })(jQuery);
 
@@ -60,8 +131,8 @@ function initialize() {
 	console.log('initializing...');
 	console.log('initializing media');
 	
-	var mediaConfig = {'video':true, 'audio': true};
-	navigator.webkitGetUserMedia(mediaConfig, onUserMediaSuccess);
+	var mediaConfig = {'audio': true};
+	navigator.getUserMedia(mediaConfig, onUserMediaSuccess, userMediaError);
 
 }
 
@@ -71,7 +142,12 @@ function attachMediaStream(stream) {
 	localStream = stream;
 	console.log("Attaching media stream");
 	var localMedia = $('video.LocalMedia').get(0);
-	localMedia.src = webkitURL.createObjectURL(stream);
+	if (localMedia.mozSrcObject !== undefined) {
+        localMedia.mozSrcObject = stream;
+    } else {
+        localMedia.src = (window.URL && window.URL.createObjectURL(stream)) || stream;
+    };
+	localMedia.play();
 };
 
 var remoteMedia = null;
@@ -88,7 +164,7 @@ function onUserMediaSuccess(stream) {
 
 function createPeers() {
 	var pc_config = {"iceServers": [{"url": "stun:stun.l.google.com:19302"}]};
-	pc1 = new webkitRTCPeerConnection(null);
+	pc1 = new RTCPeerConnection(null);
 	pc1.onicecandidate = function(event) {
 		if (event.candidate) {
 			pc2.addIceCandidate(event.candidate);
@@ -104,7 +180,7 @@ function onGotRemoteDescription(remoteDescription) {
 }
 
 function onGotLocalDescription(localDescription) {
-	pc2 = new webkitRTCPeerConnection(null);
+	pc2 = new RTCPeerConnection(null);
 	
 	pc2.onicecandidate = function(event) {
 		if (event.candidate) {
