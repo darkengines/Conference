@@ -1,10 +1,2 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Context antiJARLocking="true" path="/Conference">
-    <Resource
-	name="jdbc/db" type="javax.sql.DataSource"
-	maxActive="100" maxIdle="30" maxWait="10000"
-	url="jdbc:mysql://127.0.0.1/conference"
-	driverClassName="com.mysql.jdbc.Driver"
-	username="root" password="2701104$reg2rt"
-    />
-</Context>
+<Context antiJARLocking="true" path=""/>
