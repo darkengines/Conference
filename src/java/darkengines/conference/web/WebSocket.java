@@ -17,13 +17,6 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 public class WebSocket extends WebSocketServlet {
 
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) {
-	String r = request.getParameter("caca");
-	if (r == null) {
-	    response.setStatus(404);
-	}
-    }
-    @Override
     public void configure(WebSocketServletFactory wssf) {
 	wssf.register(NexusWebSocket.class);
     }

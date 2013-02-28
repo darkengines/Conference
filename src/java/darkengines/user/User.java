@@ -45,5 +45,7 @@ public class User {
     public void setDisplayName(String displayName) {
 	this.displayName = displayName;
     }
-    
+    public boolean equal(User user) {
+        return user != null && user.id == id;
+    }
 }

@@ -1,36 +1,17 @@
-
-var socket = null;
 (function() {
     $(document).ready(function() {
-		$('div.Login').each(function() {
-		   var $container = $(this);
-		   $('form.Login', $container).each(function() {
-			   var $form = $(this);
-			   $('input[type=submit]', $form).click(function() {
-				  $.ajax({
-					  url: $form.attr('action'),
-					  data: $form.serialize(),
-					  success: function(content) {
-						if (content.code) {
-							$('p.Result', $container).text(content.content.message);
-						} else {
-							$('p.Result', $container).append($('<p>'+content.content.uuid+'</p>'));
-							$.cookie('uuid', content.content.uuid);
-							socket = new WebSocket('ws://192.168.1.2:8080/conference/websocket');
-							socket.onmessage = function(e) {
-								$('p.Result', $container).append($('<p>'+e.data+'</p>'));
-							}
-							socket.onopen = function() {
-								var pc = new RTCPeerConnection(null);
-								pc.createOffer(onGotLocalDescription);
-							}
-						}
-					  }
-				  });
-				  return false;
-			   });
-		   }) 
-		});
+	var uuid = $.cookie('uuid');
+        var socket = new WebSocket('ws://127.0.0.1:8080/conference/websocket?uuid='+uuid);
+        socket.onopen = function(event) {
+            var query = {
+                type: 1,
+                data: 'getUserList'
+            }
+            socket.send(JSON.stringify(query));
+        }
+        socket.onmessage = function(event) {
+            
+        }
     });
 })(jQuery);
 
