@@ -18,6 +18,7 @@ public class WebSocket extends WebSocketServlet {
 
     @Override
     public void configure(WebSocketServletFactory wssf) {
+	wssf.getPolicy().setIdleTimeout(10000);
 	wssf.register(NexusWebSocket.class);
     }
 

@@ -9,14 +9,14 @@ package darkengines.nexus;
  * @author Quicksort
  */
 public class NexusMessage {
-    private int type;
+    private NexusMessageType type;
     private Object data;
 
-    public int getType() {
+    public NexusMessageType getType() {
         return type;
     }
 
-    public void setType(int type) {
+    public void setType(NexusMessageType type) {
         this.type = type;
     }
 

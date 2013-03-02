@@ -1,17 +1,48 @@
 (function() {
     $(document).ready(function() {
 	var uuid = $.cookie('uuid');
-        var socket = new WebSocket('ws://127.0.0.1:8080/conference/websocket?uuid='+uuid);
-        socket.onopen = function(event) {
-            var query = {
-                type: 1,
-                data: 'getUserList'
-            }
-            socket.send(JSON.stringify(query));
-        }
-        socket.onmessage = function(event) {
-            
-        }
+        var $socket = $.websocket('ws://127.0.0.1:8080/conference/websocket?uuid='+uuid, {
+	    interval: 5000,
+	    open: function() {
+		$socket.send('GET_ONLINE_USERS');
+	    },
+	    close: function() {
+		
+	    },
+	    events: {
+		GET_ONLINE_USERS: function(e) {
+		    var userList = e;
+		    var length = userList.length;
+		    while (length--) {
+			var user = userList[length];
+			$('ul.UserList').append($('<li data-user-id="'+user.id+'">'+user.displayName+'</li>'));
+		    }
+		},
+		OFFLINE_USER: function(e) {
+		    $('ul.UserList li[data-user-id="'+e.id+'"]').remove();
+		},
+		ONLINE_USER: function(e) {
+		    $('ul.UserList').append($('<li data-user-id="'+e.id+'">'+e.displayName+'</li>'));
+		},
+		CHAT_MESSAGE: function(e) {
+		    $('div.Chat div.Content').append($('<p>'+e.author.displayName+': '+e.content+'</p>'));
+		}
+	    }
+	});
+	$('div.Chat').each(function() {
+	   var $container = $(this);
+	   var $input = $('input.ChatInput[type=text]', $container);
+	   var $output = $('div.Content', $container);
+	   $input.keyup(function(e) {
+	       var content = $input.val();
+	       if (content != '' && e.keyCode == 13) {
+		   $socket.send('CHAT_MESSAGE', {
+		       content: content
+		   });
+		   $output.append($('<p>Me: '+content+'</p>'));
+	       }
+	   });
+	});
     });
 })(jQuery);
 

@@ -8,10 +8,11 @@ import darkengines.session.SessionModule;
 import darkengines.user.User;
 import darkengines.user.UserModule;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.jasper.tagplugins.jstl.core.Out;
 import org.eclipse.jetty.websocket.api.RemoteEndpoint;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketListener;
@@ -23,14 +24,19 @@ import org.eclipse.jetty.websocket.api.WebSocketListener;
 public class NexusWebSocket implements WebSocketListener {
     
     private User socketUser = null;
-    private RemoteEndpoint remote = null;
+    private Session session = null;
+    private Long lastPong = null;
+    public Long getLastPong() {
+	return lastPong;
+    }
     
-    public RemoteEndpoint getRemote() {
-        return remote;
+    public Session getSession() {
+        return session;
     }
     
     @Override
     public void onWebSocketBinary(byte[] bytes, int i, int i1) {
+	lastPong = Calendar.getInstance().getTimeInMillis();
 	throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -55,7 +61,7 @@ public class NexusWebSocket implements WebSocketListener {
                         sn.disconnect();
                     } else {
                         socketUser = user;
-                        remote = sn.getRemote();
+                        this.session = sn;
                         Nexus.getInstance().addSocket(this);
                     }
                 }
@@ -77,6 +83,7 @@ public class NexusWebSocket implements WebSocketListener {
 
     @Override
     public void onWebSocketText(String string) {
+	lastPong = Calendar.getInstance().getTimeInMillis();
 	Nexus.getInstance().processMessage(this, string);
     }
     public User getSocketUser() {
