@@ -4,14 +4,20 @@
  */
 package darkengines.nexus;
 
+import darkengines.user.User;
+
 /**
  *
  * @author Quicksort
  */
-class UserListItem {
+class ClientUser {
     private long id;
     private String displayName;
-    public UserListItem(long id, String displayName) {
+    public ClientUser(User user) {
+        this.id = user.getId();
+        this.displayName = user.getDisplayName();
+    }
+    public ClientUser(long id, String displayName) {
         this.id = id;
         this.displayName = displayName;
     }

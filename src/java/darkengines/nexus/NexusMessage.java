@@ -4,13 +4,14 @@
  */
 package darkengines.nexus;
 
+import com.google.gson.JsonElement;
 /**
  *
  * @author Quicksort
  */
 public class NexusMessage {
     private NexusMessageType type;
-    private Object data;
+    private JsonElement data;
 
     public NexusMessageType getType() {
         return type;
@@ -20,11 +21,11 @@ public class NexusMessage {
         this.type = type;
     }
 
-    public Object getData() {
+    public JsonElement getData() {
         return data;
     }
 
-    public void setData(Object data) {
+    public void setData(JsonElement data) {
         this.data = data;
     }
 }

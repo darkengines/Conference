@@ -13,7 +13,7 @@
 	    var ws = new WebSocket(url);
 	    ws.interval = s.interval;
 	    ws.keepAlive = function() {
-		ws.send('KEEP_ALIVE', null);
+		ws.send('KEEP_ALIVE');
 	    };
 	    ws.events = s.events;
 	    ws.onopen = s.open;
@@ -24,16 +24,23 @@
 	    }
 	    ws._send = ws.send;
 	    ws.send = function(type, data) {
-		var json = {
-		    type: type, 
-		    data: data
-		};
+		var json = null;
+		if (typeof data == 'undefined' || data == null) {
+		    json = {
+			type: type
+		    }; 
+		} else {
+		    json = {
+			type: type, 
+			data: data
+		    };
+		}
 		return this._send(JSON.stringify(json));
 	    }
 	    $(window).unload(function(){
 		clearInterval(ws.daemon);
 		ws.close();
-		ws = null
+		ws = null;
 	    });
 	    ws.daemon = setInterval(ws.keepAlive, ws.interval);
 	    return ws;

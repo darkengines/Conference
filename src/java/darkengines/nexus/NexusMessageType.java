@@ -14,7 +14,10 @@ public enum NexusMessageType {
     GET_ONLINE_USERS(0x1),
     OFFLINE_USER(0x2),
     ONLINE_USER(0x3), 
-    CHAT_MESSAGE(0x4);
+    CHAT_MESSAGE(0x4),
+    CALL_REQUEST(0x4),
+    CALL_RESPONSE(0x5),
+    ICE_CANDIDATE(0x6);
     
     private int code;
 
