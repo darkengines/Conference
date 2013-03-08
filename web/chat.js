@@ -80,6 +80,7 @@ var mediaConfig = {
                                 }
                             };
                             pc1.onaddstream = function (event) {
+				$('video.RemoteMedia').show();
                                 remoteMedia = $('video.RemoteMedia').get(0);
                                 remoteStream = event.stream;
 				attachMediaStream(remoteMedia, remoteStream);
@@ -132,7 +133,17 @@ var mediaConfig = {
                         if (callRequests[size].caller.id == $.cookie('id')) {
                             var pc2 = createPeerConnection();
                             callRequests[size].peer = pc2;
-                            pc2.onicecandidate = function (event) {
+                           
+                            var sessionDescription = new RTCSessionDescription(e.localDescription);
+			    pc2.setRemoteDescription(sessionDescription);
+                            pc2.onaddstream = function (event) {
+				$('video.RemoteMedia').show();
+                                remoteMedia = $('video.RemoteMedia').get(0);
+                                remoteStream = event.stream;
+                                attachMediaStream(remoteMedia, remoteStream);
+                                remoteMedia.play();
+                            };
+			     pc2.onicecandidate = function (event) {
                                 if (event.candidate) {
                                     $socket.send('ICE_CANDIDATE', {
                                         uuid: e.uuid,
@@ -141,17 +152,8 @@ var mediaConfig = {
                                     });
                                 }
                             };
-                            var sessionDescription = new RTCSessionDescription(e.localDescription);
-                            pc2.onaddstream = function (event) {
-				
-                                remoteMedia = $('video.RemoteMedia').get(0);
-                                remoteStream = event.stream;
-                                attachMediaStream(remoteMedia, remoteStream);
-                                remoteMedia.play();
-                            };
                             getUserMedia(mediaConfig, function (stream) {
                                 pc2.addStream(stream);
-				pc2.setRemoteDescription(sessionDescription);
                                 pc2.createAnswer(function (localDescription) {
 				    e.peer = pc2;
 				    localDescription.sdp = preferOpus(localDescription.sdp);

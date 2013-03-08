@@ -4,23 +4,23 @@
  */
 package darkengines.nexus;
 
-import darkengines.user.User;
+import WRTC.PeerToPeerConnection.RTCIceCandidate;
 
 /**
  *
  * @author Quicksort
  */
-public class NexusChatMessage {
+public class IceCandidate {
     private UserItem author;
     private UserItem recipient;
-    private String content;
-
-    public void setAuthor(UserItem author) {
-	this.author = author;
-    }
+    private RTCIceCandidate iceCandidate;
 
     public UserItem getAuthor() {
 	return author;
+    }
+
+    public void setAuthor(UserItem author) {
+	this.author = author;
     }
 
     public UserItem getRecipient() {
@@ -30,12 +30,13 @@ public class NexusChatMessage {
     public void setRecipient(UserItem recipient) {
 	this.recipient = recipient;
     }
-    
-    public String getContent() {
-	return content;
+
+    public RTCIceCandidate getIceCandidate() {
+	return iceCandidate;
     }
 
-    public void setContent(String content) {
-	this.content = content;
+    public void RTCIceCandidate(RTCIceCandidate iceCandidate) {
+	this.iceCandidate = iceCandidate;
     }
+    
 }

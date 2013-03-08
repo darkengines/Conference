@@ -4,10 +4,8 @@
  */
 package darkengines.nexus;
 
-import WRTC.PeerToPeerConnection.RTCSessionDescription;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonElement;
 import darkengines.user.User;
 import java.io.IOException;
@@ -24,6 +22,7 @@ public class Nexus {
     private static Nexus instance = null;
     protected ArrayList<NexusWebSocket> sockets = null;
     protected Gson gson = null;
+
     protected Nexus() {
 	GsonBuilder gsonBuilder = new GsonBuilder();
 	gsonBuilder.registerTypeAdapter(NexusMessage.class, new NexusMessageDeserializer());
@@ -115,6 +114,30 @@ public class Nexus {
 		}
 		break;
 	    }
+	    case OFFER: {
+		try {
+		    sendOffer(socket, json);
+		} catch (IOException ex) {
+		    Logger.getLogger(Nexus.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		break;
+	    }
+	    case ANSWER: {
+		try {
+		    sendAnswer(socket, json);
+		} catch (IOException ex) {
+		    Logger.getLogger(Nexus.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		break;
+	    }
+		case HANGUP: {
+		try {
+		    sendHangUp(socket, json);
+		} catch (IOException ex) {
+		    Logger.getLogger(Nexus.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		break;
+	    }
 	    default: {
 
 		break;
@@ -137,27 +160,20 @@ public class Nexus {
 	    result[i] = new ClientUser(user.getId(), user.getDisplayName());
 	    i++;
 	}
-	
-	NexusMessage nexusMessage = new NexusMessage();
-	nexusMessage.setType(NexusMessageType.GET_ONLINE_USERS);
-	
-	nexusMessage.setData(gson.toJsonTree(result));
+
+	NexusMessage nexusMessage = new NexusMessage(NexusMessageType.GET_ONLINE_USERS, gson.toJsonTree(result));
 	socket.getSession().getRemote().sendString(gson.toJson(nexusMessage));
     }
 
     private void sendOfflineUser(User user) throws IOException {
-	NexusMessage message = new NexusMessage();
-	message.setType(NexusMessageType.OFFLINE_USER);
-	message.setData(gson.toJsonTree(new ClientUser(user.getId(), null)));
+	NexusMessage message = new NexusMessage(NexusMessageType.OFFLINE_USER, gson.toJsonTree(new ClientUser(user.getId(), null)));
 	for (NexusWebSocket s : sockets) {
 	    s.getSession().getRemote().sendString(gson.toJson(message));
 	}
     }
 
     private void sendOnlineUser(User user) throws IOException {
-	NexusMessage message = new NexusMessage();
-	message.setType(NexusMessageType.ONLINE_USER);
-	message.setData(gson.toJsonTree(new ClientUser(user.getId(), user.getDisplayName())));
+	NexusMessage message = new NexusMessage(NexusMessageType.ONLINE_USER, gson.toJsonTree(new ClientUser(user.getId(), user.getDisplayName())));
 	for (NexusWebSocket s : sockets) {
 	    if (!s.getSocketUser().equals(user)) {
 		s.getSession().getRemote().sendString(gson.toJson(message));
@@ -167,12 +183,16 @@ public class Nexus {
 
     private void sendChatMessage(NexusWebSocket socket, JsonElement json) throws IOException {
 	NexusChatMessage chatMessage = gson.fromJson(json, NexusChatMessage.class);
-	chatMessage.setAuthor(socket.getSocketUser());
-	NexusMessage message = new NexusMessage();
-	message.setType(NexusMessageType.CHAT_MESSAGE);
-	message.setData(gson.toJsonTree(chatMessage));
-	for (NexusWebSocket s : sockets) {
-	    s.getSession().getRemote().sendString(gson.toJson(message));
+	chatMessage.setAuthor(new UserItem(socket.getSocketUser()));
+	NexusMessage message = new NexusMessage(NexusMessageType.CHAT_MESSAGE, gson.toJsonTree(chatMessage));
+	int length = sockets.size();
+	boolean found = false;
+	while (!found && length-- > 0) {
+	    found = sockets.get(length).getSocketUser().getId() == chatMessage.getRecipient().getId();
+	}
+	if (found) {
+	    sockets.get(length).getSession().getRemote().sendString(gson.toJson(message));
+	    socket.getSession().getRemote().sendString(gson.toJson(message));
 	}
     }
 
@@ -187,9 +207,7 @@ public class Nexus {
 	if (found) {
 	    target = sockets.get(size);
 	}
-	NexusMessage message = new NexusMessage();
-	message.setType(NexusMessageType.CALL_REQUEST);
-	message.setData(gson.toJsonTree(new CallRequest(socket.getSocketUser(), target.getSocketUser())));
+	NexusMessage message = new NexusMessage(NexusMessageType.CALL_REQUEST, gson.toJsonTree(new CallRequest(socket.getSocketUser(), target.getSocketUser())));
 	target.getSession().getRemote().sendString(new Gson().toJson(message));
 	socket.getSession().getRemote().sendString(new Gson().toJson(message));
     }
@@ -205,26 +223,73 @@ public class Nexus {
 	if (found) {
 	    target = sockets.get(size);
 	}
-	NexusMessage message = new NexusMessage();
-	message.setType(NexusMessageType.CALL_RESPONSE);
-	message.setData(json);
+	NexusMessage message = new NexusMessage(NexusMessageType.CALL_RESPONSE, json);
 	target.getSession().getRemote().sendString(gson.toJson(message).toString());
     }
 
     private void sendIceCandidate(NexusWebSocket socket, JsonElement json) throws IOException {
-	IceCandidateRequest iceCandidateRequest = gson.fromJson(json, IceCandidateRequest.class);
+	IceCandidate iceCandidate = gson.fromJson(json, IceCandidate.class);
 	NexusWebSocket target = null;
 	boolean found = false;
 	int size = sockets.size();
 	while (!found && size-- > 0) {
-	    found = sockets.get(size).getSocketUser().getId() == iceCandidateRequest.getUserId();
+	    found = sockets.get(size).getSocketUser().getId() == iceCandidate.getRecipient().getId();
+	}
+	if (found) {
+	    target = sockets.get(size);
+	    iceCandidate.setAuthor(new UserItem(socket.getSocketUser()));
+	}
+	NexusMessage message = new NexusMessage(NexusMessageType.ICE_CANDIDATE, gson.toJsonTree(iceCandidate));
+	target.getSession().getRemote().sendString(gson.toJson(message).toString());
+    }
+
+    private void sendOffer(NexusWebSocket socket, JsonElement json) throws IOException {
+	Offer offer = gson.fromJson(json, Offer.class);
+	NexusWebSocket target = null;
+	boolean found = false;
+	int size = sockets.size();
+	while (!found && size-- > 0) {
+	    found = sockets.get(size).getSocketUser().getId() == offer.getCallee().getId();
 	}
 	if (found) {
 	    target = sockets.get(size);
 	}
-	NexusMessage message = new NexusMessage();
-	message.setType(NexusMessageType.ICE_CANDIDATE);
-	message.setData(json);
-	target.getSession().getRemote().sendString(gson.toJson(message).toString());
+	NexusMessage message = new NexusMessage(NexusMessageType.OFFER, json);
+	target.getSession().getRemote().sendString(new Gson().toJson(message));
+    }
+    private void sendAnswer(NexusWebSocket socket, JsonElement json) throws IOException {
+	Offer offer = gson.fromJson(json, Offer.class);
+	NexusWebSocket target = null;
+	boolean found = false;
+	int size = sockets.size();
+	while (!found && size-- > 0) {
+	    found = sockets.get(size).getSocketUser().getId() == offer.getCaller().getId();
+	}
+	if (found) {
+	    target = sockets.get(size);
+	}
+	NexusMessage message = new NexusMessage(NexusMessageType.ANSWER, json);
+	target.getSession().getRemote().sendString(new Gson().toJson(message));
+    }
+
+    private void sendHangUp(NexusWebSocket socket, JsonElement json) throws IOException {
+	HangUp hangUp = gson.fromJson(json, HangUp.class);
+	hangUp.setAuthor(new UserItem(socket.getSocketUser()));
+	NexusWebSocket target = findSocketByUserId(hangUp.getRecipient().getId());
+	if (target != null) {
+	    NexusMessage message = new NexusMessage(NexusMessageType.HANGUP, gson.toJsonTree(hangUp));
+	    target.getSession().getRemote().sendString(gson.toJson(message));
+	}
+    }
+    
+    private NexusWebSocket findSocketByUserId(long id) {
+	NexusWebSocket result = null;
+	int size = sockets.size();
+	while (result == null && size-- > 0) {
+	    if (sockets.get(size).getSocketUser().getId() == id) {
+		result = sockets.get(size);
+	    }
+	}
+	return result;
     }
 }

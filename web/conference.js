@@ -65,7 +65,7 @@ function setGetUserMedia() {
 
 (function() {
     $(document).ready(function() {
-		initialize();
+		//initialize();
 		$('div.Setup').each(function() {
 		   var $container = $(this);
 		   $('a.Setup', $container).each(function() {
@@ -112,6 +112,7 @@ function setGetUserMedia() {
 							$('p.Result', $container).text(content.content.uuid);
 							$.cookie('uuid', content.content.uuid);
 							$.cookie('id', content.content.userId);
+							window.location = "nexus.html";
 						}
 					  }
 				  });

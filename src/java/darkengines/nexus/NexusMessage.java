@@ -13,6 +13,15 @@ public class NexusMessage {
     private NexusMessageType type;
     private JsonElement data;
 
+    public NexusMessage() {
+	
+    }
+    
+    public NexusMessage(NexusMessageType type, JsonElement data) {
+	this.type = type;
+	this.data = data;
+    }
+    
     public NexusMessageType getType() {
         return type;
     }
