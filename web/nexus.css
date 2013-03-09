@@ -1,6 +1,6 @@
 body {
     background-color: #242736;
-    font-family: verdana;
+    font-family: tahoma;
 }
 
 .Container {
@@ -9,6 +9,94 @@ body {
     padding: 5px;
     background-color: #EEEEEE;
     border-radius: 5px;
+}
+
+.Card {
+    width: 1024px;
+    margin: 64px auto 0 auto;;
+    padding: 16px;
+    text-align: center;
+}
+
+
+
+.Card .Content {
+    display: inline-block;
+    background-color: inherit;
+    margin: 0 64px 0 0;
+}
+
+.Card .Content.Presentation {
+    width: 512px;
+    vertical-align: middle;
+    color: #FEFEFE;
+    font-size: 16px;
+}
+
+.Card .Content.Presentation .Featurings {
+    margin-top: 64px;
+}
+
+.Card .Content.Presentation .Featurings .Featuring {
+    height: 50px;
+    line-height: 50px;
+}
+.Card .Content.Presentation .Featurings .Featuring span {
+    vertical-align: top;
+    width: 128px;
+    display: inline-block;
+}
+
+.Card .Content .Form {
+    margin-bottom: 16px;
+    width: 280px;
+}
+
+.Field {
+    margin: 8px 8px 8px 8px;
+    position: relative;
+}
+
+.Field label {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    bottom: 1px;
+    left: 2px;
+    z-index: 1;
+    height: 20px;
+    padding: 4px;
+    font-size: 13px;
+    line-height: 20px;
+    color: #999;
+    white-space: nowrap;
+    cursor: text;
+    -webkit-transition: opacity .1s,font-size .1s;
+    -moz-transition: opacity .1s,font-size .1s;
+    -o-transition: opacity .1s,font-size .1s;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+    width: 200px;
+}
+
+.Field input[type="text"]:focus, input[type="password"]:focus {
+    border: 1px solid #56b4ef;
+    -webkit-box-shadow: inset 0 1px 3px rgba(0,0,0,.05),0 0 8px rgba(82,168,236,.6);
+    -moz-box-shadow: inset 0 1px 3px rgba(0,0,0,.05),0 0 8px rgba(82,168,236,.6);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,.05),0 0 8px rgba(82,168,236,.6);
+    outline: none;
+}
+
+.Field input[type="text"], input[type="password"] {
+    height: 26px;
+    border: 1px solid #ccc;
+    -webkit-box-shadow: inset 0 1px 0 #eee,#fff 0 1px 0;
+    -moz-box-shadow: inset 0 1px 0 #eee,#fff 0 1px 0;
+    box-shadow: inset 0 1px 0 #eee,#fff 0 1px 0;
+    padding-left: 4px;
+    border-radius: 2px;
 }
 
 .Content {
@@ -20,6 +108,42 @@ body {
     *zoom: 1;
     text-align: justify;
     font-size: 12px;
+}
+
+.Content.Middle {
+    width: 100%;
+}
+
+.Content.Middle h3 {
+    background-color: #2B6BA2;
+    background-image: url(star.png);
+    background-repeat: no-repeat;
+    background-position: 2px 50%;
+    width: 1024px;
+    color: #EEEEEE;
+    border-radius: 5px 5px 5px 5px;
+    margin: 0 -10px 4px -10px;
+    padding: 0 0 0 20px;
+    height: 20px;
+    line-height: 20px;
+}
+
+.Content.Middle .Join {
+    margin: auto;
+}
+
+.Content.Middle form tr td {
+    padding: 5px;
+}
+
+.Content.Middle form tr td input[type="text"] {
+    margin-left: 16px;
+    width: 220px;
+}
+
+.Content.Middle form tr td input[type="password"] {
+    margin-left: 16px;
+    width: 220px;
 }
 
 .Content.Left {
@@ -98,6 +222,10 @@ body {
     z-index: 128;
     left: 10px;
     top: 10px;
+}
+
+.Chat div.Header div {
+    display: inline-block;
 }
 
 .Chat div.Header video {

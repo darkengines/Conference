@@ -24,7 +24,19 @@ var mediaConfig = {
 		iceCandidates: new Array(),
 		emptyIceCandidateCount: 0,
 		peer: null,
+		receivingLocalStream: false,
 		stream: null,
+		
+		reset : function() {
+		    user.pendingOffer = null;
+		    user.emptyIceCandidateCount = null;
+		    if (user.peer != null) {
+			user.peer.close();
+			user.peer = null;
+		    }
+		    user.receivingLocalStream = false;
+		    user.stream = null;
+		},
 		
 		call: function() {
 		    alert("NOT SUPPORTED");
@@ -70,7 +82,7 @@ var mediaConfig = {
 		onlineUser: null,
 		offlineUser: null,
 		localStream:null,
-		localStreamAdded: function(stream) {
+		sendingLocalStream: function(stream) {
 		    alert('NOT SUPPORTED');
 		},
 		websocket: $.websocket('ws://www.darkengines.net:8080/conference/websocket?uuid='+$.cookie('uuid'), {
@@ -102,6 +114,11 @@ var mediaConfig = {
 			    $(indices).each(function(index, toRemoveIndex) {
 				var toRemoveUser = engine._onlineUsers[toRemoveIndex];
 				engine._onlineUsers.splice(toRemoveIndex , 1);
+				if (toRemoveUser.stream != null) {
+				    toRemoveUser.stream = null;
+				}
+				toRemoveUser.reset();
+				toRemoveUser.onHangUp();
 				toRemoveUser.offline();
 			    });
 			},
@@ -187,11 +204,14 @@ var mediaConfig = {
 			localUser.peer.onaddstream = function(e) {
 			    localUser.stream = e.stream;
 			    localUser.streamAdded(e.stream);
+			    localUser.receivingLocalStream = true;
 			};
 			localUser.peer.onremovestream = localUser.streamRemoved;
 			engine.doGetUserMedia(function(stream) {
 			    engine.localStream = stream;
 			    localUser.peer.addStream(engine.localStream);
+			    localUser.receivingLocalStream = true;
+			    engine.sendingLocalStream();
 			    var constraints = {
 				"optional": [],
 				"mandatory": {
@@ -221,6 +241,7 @@ var mediaConfig = {
 			    localUser.peer.onaddstream = function(e) {
 				localUser.stream = e.stream;
 				localUser.streamAdded(e.stream);
+				localUser.receivingLocalStream = true;
 			    }
 			    localUser.peer.onremovestream = localUser.streamRemoved;
 			    localUser.peer.setRemoteDescription(new RTCSessionDescription(localUser.pendingOffer.description));
@@ -229,9 +250,12 @@ var mediaConfig = {
 			    }
 			    engine.doGetUserMedia(function(stream) {
 				engine.localStream = stream;
+				localUser.receivingLocalStream = true;
+				engine.sendingLocalStream(stream);
 				localUser.peer.addStream(engine.localStream);
+				engine.sendingLocalStream();
 				localUser.peer.createAnswer(function(description) {
-				    engine.onGotLocalDescription(description, localUser, 'ANSWER');
+				    engine.onGotLocalDescription(description, localUser, 'ANSWER');				    
 				})
 			    });
 			    localUser.pendingOffer = null;
@@ -338,7 +362,6 @@ var mediaConfig = {
 			    'audio': true,
 			    'video': constraints
 			}, function(stream) {
-			    engine.localStreamAdded(stream);
 			    successCallback(stream);
 			},
 			function() {

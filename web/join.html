@@ -1,28 +1,86 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="utf-8">
-    <title>Setup</title>
-    <script type="text/javascript" src="jquery.js"></script>
-    <script type="text/javascript" src="conference.js"></script>
+    <head>
+	<meta charset="utf-8">
+	<title>Setup</title>
+	<script type="text/javascript" src="jquery.js"></script>
+	<script type="text/javascript" src="conference.js"></script>
 	<script type="text/javascript" src="jquery_cookie.js"></script>
-    <link rel="stylesheet" href="conference.css" type="text/css" />
-  </head>
-<body>
-    <div class="Content">
-		<div class="Join">
-			<form action="join" method="post" class="Join">
-				<label for="email">Email:</label>
-				<input id="email" type="text" name="email">
-				<label for="password">Password:</label>
-				<input id="password" type="text" name="password">
-				<label for="display_name">Display name:</label>
-				<input id="display_name" type="text" name="display_name">
-				<input type="submit" value="Join" class="Join"/>
-			</form>
-			<p class="Result">
-			</p>
+	<link rel="stylesheet" href="nexus.css" type="text/css" />
+    </head>
+    <body>
+	<div class="Container">
+	    <div class="Content Middle">
+		<h3>Join us !</h3>
+		<div class="Home">
+		    <table>
+			<tr>
+			    <td>
+				<div class="Login">
+				    <form action="login" method="post" class="Login">
+					<table>
+					    <tr>
+						<td><label for="email">Email:</label></td>
+						<td> <input id="email" type="text" name="email"/></td>
+					    </tr>
+					    <tr>
+						<td><label for="password">Password:</label></td>
+						<td><input id="password" type="password" name="password"></td>
+					    </tr>
+					    <tr>
+						<td colspan="2" align="right"><input type="submit" value="Login" class="Login"/></td>
+					    </tr>
+					</table>
+				    </form>
+				</div>
+				<div class="Join">
+				    <form action="join" method="post" class="Join">
+					<table>
+					    <tr>
+						<td>
+						    <label for="email">Email:</label>
+						</td>
+						<td>
+						    <input id="email" type="text" name="email">
+						</td>
+					    </tr>
+					    <tr>
+						<td>
+						    <label for="password">Password:</label>
+						</td>
+						<td>
+						    <input id="password" type="password" name="password">
+						</td>
+					    </tr>
+					    <tr>
+						<td>
+						    <label for="display_name">Display name:</label>
+						</td>
+						<td>
+						    <input id="display_name" type="text" name="display_name">
+						</td>
+					    </tr>
+
+					    <tr>
+						<td colspan="2" align="right"><input type="submit" value="Join" class="Join"/></td>
+					    </tr>
+					</table>
+				    </form>
+				</div>
+			    </td>
+			    <td>
+				<div class="Speach">
+				    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla vestibulum metus et sem aliquam convallis. Morbi pharetra cursus dui, sit amet accumsan lacus vestibulum in. Vestibulum mi purus, ultricies et adipiscing sed, sodales pellentesque tellus. Suspendisse laoreet pretium neque vitae luctus. Nam elit dolor, ultricies consectetur bibendum non, fringilla tempus felis. Suspendisse tortor mauris, auctor eu molestie eu, scelerisque ut augue. Fusce semper molestie ante, a malesuada lorem iaculis vel. Sed scelerisque feugiat neque sit amet faucibus.
+
+				    Aenean adipiscing congue magna, eget sagittis risus iaculis et. Pellentesque fringilla sapien id sem pretium ultrices. Pellentesque augue metus, pretium sit amet sagittis et, commodo vel nisi. Duis ut justo metus, feugiat interdum urna. Sed non mi non augue egestas porttitor nec ac nisl. Vivamus at condimentum ligula. Integer mollis suscipit leo, quis posuere purus pulvinar commodo. Cras ac magna lacus, lacinia tempor tortor. Nullam nec mauris neque. Proin dapibus vulputate diam, id sollicitudin nibh porttitor vitae. Etiam gravida accumsan odio, ut laoreet dolor egestas ac. Maecenas vitae est ipsum, at dapibus neque.
+
+				    Maecenas vehicula commodo fermentum. Sed mi est, molestie ac sodales ac, tincidunt in lacus. Proin id lorem eu mauris vulputate imperdiet a ac nibh. Integer ut turpis metus, at suscipit nisl. Nunc eu urna porta neque faucibus bibendum imperdiet sit amet sem. Donec tempor lectus vel sem tincidunt laoreet in eu turpis. Donec sagittis interdum nisl sed pharetra. Donec quam purus, cursus id interdum non, dapibus ac mi. Aliquam sit amet nibh eu lacus egestas ornare.
+				</div>
+			    </td>
+			</tr>
+		    </table>
 		</div>
+	    </div>
 	</div>
-</body>
+    </body>
 </html>

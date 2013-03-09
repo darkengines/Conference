@@ -4,14 +4,16 @@
 	var ChatMessageNotificationHtmlTemplate = '<div class="ChatMessageNotification"></div>';
 	
 	var $chatOutput = $('div.Chat div.Output');
-	var $chaCallNotification = $('div.Chat div.Output div.Notification .CallNotification');
+	var $chatCallNotification = $('div.Chat div.Output div.Notification .CallNotification');
 	var $chatMessageNotification = $('div.Chat div.Output div.Notification .MessageNotification');
 	var $chatOutputText = $('div.Chat div.Output .TextContent');
 	var $chatOutputHeader = $('div.Chat div.Header');
 	var $chatInputText = $('div.Chat div.Input');
 	var $camera = $('div.Chat div.Options a.Camera');
 	var $users = $('div.Users');
-	var $localVideo = $('<video class="Local" autoplay="true" muted="true" controls="true"></video>')
+	var $localVideo = $('<video class="Local" autoplay="true" muted="true" controls="true"></video>');
+	var $localMedias = $('.LocalMedias');
+	var $remoteMedias = $('.RemoteMedias');
 	var selectedRecipient = null;
 	var $engine = $.engine();
 	
@@ -39,11 +41,8 @@
 		addUser(user)
 	    });
 	};
-	$engine.localStreamAdded= function(stream) {
-	    var media = $('<video controls="true" autoplay="autoplay" class="Local" muted="true"/>').get(0);
-	    attachMediaStream(media, stream);
-	    $chatOutputHeader.append($(media));
-	    media.play();
+	$engine.sendingLocalStream = function() {
+	    refreshLocalStream();
 	};
 	$engine.onlineUser = function(user) {
 	    addUser(user)
@@ -52,11 +51,15 @@
 	    var $user = $('<div class="Contrast User"><table><tr><td class="DisplayName">'+user.displayName+'</td><td class="ChatMessageNotification"></td></tr></table></div>');
 	    user.label = $user;
 	    $user.click(function() {
-		selectedRecipient = user;
-		selectedRecipientChanged(selectedRecipient);
+		if (selectedRecipient == null || selectedRecipient.id != user.id) {
+		    selectedRecipient = user;
+		    selectedRecipientChanged(selectedRecipient);
+		}
 	    });
 	    user.offline = function() {
 		$user.remove();
+		$user = null;
+		selectedRecipient = null;
 	    };
 	    user.chatMessage = function(pendingChatMessages) {
 		if (selectedRecipient!=null && selectedRecipient.id == user.id) {
@@ -67,26 +70,19 @@
 	    };
 	    user.streamAdded = function(stream) {
 		if (selectedRecipient!=null && selectedRecipient.id == user.id) {
-		    setRemoteStream(stream);
+		    refreshRemoteStreams(new Array(user.stream));
 		}
 	    };
 	    user.streamRemoved = function(stream) {
 		if (selectedRecipient!=null && selectedRecipient.id == user.id) {
-		    user.stream = null;
-		    removeRemoteStream(user);
+		    refreshRemoteStreams(new Array());
 		}
 	    };
 	    user.onHangUp = function() {
-		alert('handeg up');
+		refreshChat();
 	    };
 	    user.answered = function() {
-		$chaCallNotification.empty();
-		var $hangup = $('<a href="false">Hang up</a>');
-		$hangup.click(function() {
-		    user.hangUp();
-		    return false;
-		});
-		$chaCallNotification.append($('<span>Communication established</span>')).append($hangup);
+		displayHangUpForm(user);
 	    };
 	    user.offer = function() {
 		if (selectedRecipient!=null && selectedRecipient.id == user.id) {
@@ -95,57 +91,7 @@
 	    };
 	    $users.append($user);
 	}
-	function removeRemoteStream(user) {
-	    var $video = $('video.Remote', $chatOutput);
-	    if ($video.length) {
-		$video.get(0).pause();
-		$video.get(0).stop();
-		$video.remove();
-	    }
-	}
-	function displayCallForm(user) {
-	    var $question = $('<span>Answer to '+user.displayName+'\'s call ? </span>');
-	    var $yes = $('<a href="#">Accept</a>');
-	    var $no = $('<a style="margin-left: 10px;" href="#">Reject</a>');
-	    $yes.click(function() {
-		user.answer();
-		$chaCallNotification.empty();
-		var $hangup = $('<a href="false">Hang up</a>');
-		$hangup.click(function() {
-		    user.hangUp();
-		    return false;
-		});
-		$chaCallNotification.append($('<span>Communication established</span>')).append($hangup);
-		return false;
-	    });
-	    $no.click(function() {
-		$chaCallNotification.empty();
-		return false;
-	    })
-	    $chaCallNotification.empty();
-	    $chaCallNotification.append($question).append($yes).append($no);
-	}
-	function setRemoteStream(stream) {
-	    var $videos = $('video.Remote', $chatOutputHeader);
-	    var video = null;
-	    if (!$videos.length) {
-		video = $('<video autoplay="autoplay" controls="true" class="Remote"/>').get(0);
-		$chatOutputHeader.append($(video));
-	    } else {
-		video = $videos.get(0);
-	    }
-	    attachMediaStream(video, stream);
-	    video.play;
-	}
-	function writePendingChatMessages(pendingChatMessages) {
-	    while (pendingChatMessages.length > 0) {
-		var message = pendingChatMessages.pop();
-		$chatOutputText.append($('<p class="Text">'+message.author.displayName+': '+message.content+'</p>'));
-	    }
-	    $chatOutput.animate({
-		scrollTop: $chatOutput[0].scrollHeight
-	    }, 100);
-	}
+	
 	function refreshUserLabel(user) {
 	    var pendingMessagesLength = user.pendingChatMessages.length;
 	    $('.ChatMessageNotification', user.label).each(function(index, element) {
@@ -159,21 +105,12 @@
 	    })
 	    
 	}
+	
 	function selectedRecipientChanged(recipient) {
-	    clearChat();
-	    writePendingChatMessages(recipient.pendingChatMessages);
-	    if (recipient.stream != null) {
-		setRemoteStream(recipient.stream);
-	    } else {
-		removeRemoteStream(recipient);
-	    }
-	    if (recipient.pendingOffer != null) {
-		displayCallForm(recipient);
-	    } else {
-		$chaCallNotification.empty();
-	    }
+	    refreshChat();
 	    refreshUserLabel(recipient);
 	}
+	
 	function refreshChat() {
 	    refreshStreams();
 	    refreshMessages();
@@ -182,14 +119,116 @@
 	
 	function refreshStreams() {
 	    var user = selectedRecipient;
-	    if (user.receivingLocalStream && engine.localStream != null) {
-		
+	    refreshLocalStream();
+	    var streams = new Array();
+	    if (user.stream != null) {
+		streams.push(user.stream);
+	    }
+	    refreshRemoteStreams(streams);
+	}
+	function refreshLocalStream() {
+	    var user = selectedRecipient;
+	    var $localVideo = $('.LocalVideo', $localMedias);
+	    if (user.receivingLocalStream && $engine.localStream != null) {
+		if ($localVideo.length == 0) {
+		    $localVideo = $('<video autoplay="true" controls="true" class="LocalVideo"></video>');
+		    $localMedias.append($localVideo);
+		}
+		if (typeof($localVideo.attr('src')) == 'undefined' || $localVideo.attr('src') == '') {
+		    attachMediaStream($localVideo.get(0), $engine.localStream);
+		}
+	    } else {
+		if ($localVideo.length) {
+		    $localVideo.get(0).pause();
+		    $localVideo.attr('src', 'pause');
+		    $localVideo.remove();
+		    $localVideo = null;
+		}
+	    }
+	}
+	function refreshRemoteStreams(streams) {
+	    var $remoteVideos = $('video', $remoteMedias);
+	    var i = 0;
+	    var videosLen = $remoteVideos.length;
+	    var streamsLen = streams.length;
+	    
+	    while (i < streamsLen) {
+		var remoteVideo = null;
+		if (i < videosLen) {
+		    remoteVideo = $remoteVideos.get(i);
+		} else {
+		    var $remoteVideo = $('<video autoplay="true" controls="true" class="RemoteVideo"></video>');
+		    $remoteMedias.append($remoteVideo);
+		    remoteVideo = $remoteVideo.get(0);
+		}
+		attachMediaStream(remoteVideo, streams[i]);
+		remoteVideo.play();
+		i++;
+	    }
+	    
+	    while (i<videosLen) {
+		$remoteVideos.get(i).pause();
+		$remoteVideos.attr('src', '');
+		$remoteVideos.remove();
+		$remoteVideos = null;
+		i++;
+	    }
+	}
+	function refreshMessages() {
+	    var user = selectedRecipient;
+	    $chatOutputText.empty();
+	    writePendingChatMessages(user.pendingChatMessages);
+	}
+	function refreshNotifications() {
+	    var user = selectedRecipient;
+	    $chatCallNotification.empty();
+	    if (user.pendingOffer != null) {
+		displayCallForm();
 	    }
 	}
 	
-	function clearChat() {
-	    $('.Text', $chatOutputText).remove();
-	    $chatInputText.empty();
+	function writePendingChatMessages(pendingChatMessages) {
+	    while (pendingChatMessages.length > 0) {
+		var message = pendingChatMessages.pop();
+		$chatOutputText.append($('<p class="Text">'+message.author.displayName+': '+message.content+'</p>'));
+	    }
+	    $chatOutput.animate({
+		scrollTop: $chatOutput[0].scrollHeight
+	    }, 100);
+	}
+	
+	function displayCallForm(user) {
+	    var user = selectedRecipient;
+	    var $question = $('<span>Answer to '+user.displayName+'\'s call ? </span>');
+	    var $yes = $('<a href="#">Accept</a>');
+	    var $no = $('<a style="margin-left: 10px;" href="#">Reject</a>');
+	    $yes.click(function() {
+		user.answer();
+		$chatCallNotification.empty();
+		var $hangup = $('<a href="false">Hang up</a>');
+		$hangup.click(function() {
+		    user.hangUp();
+		    return false;
+		});
+		$chatCallNotification.append($('<span>Communication established</span>')).append($hangup);
+		return false;
+	    });
+	    $no.click(function() {
+		$chatCallNotification.empty();
+		return false;
+	    })
+	    $chatCallNotification.empty();
+	    $chatCallNotification.append($question).append($yes).append($no);
+	}
+	
+	function displayHangUpForm(user) {
+	    $chatCallNotification.empty();
+	    var $hangup = $('<a href="false">Hang up</a>');
+	    $hangup.click(function() {
+		user.hangUp();
+		return false;
+	    });
+	    $chatCallNotification.append($('<span>Communication established</span>')).append($hangup);
 	}
     });
 })(jQuery);
